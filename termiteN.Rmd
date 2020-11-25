@@ -3,9 +3,107 @@ title: "termiteN"
 author: "Tristan Caro"
 date: "11/24/2020"
 output: html_document
+header-includes:
+  -\usepackage{textcomp}
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+```{r, include=FALSE}
+library(tidyverse)
+```
+
+
+# Termites
+
+Many non-biological and biological processes create regularly patterned landscapes. However, there is not much understanding of how patterning impacts ecological behavior.
+
+Spatial structure in biotic processes is an important factor in governing community-level interactions and ecosystem processes. In many cases, a keystone species exerts community-wide effects. Often, this effect is created through indirect interactions that are mediated through an abiotic system or process.
+
+Termites have been identified as a keystone species in the African savannas. Termites are particularly interesting due to their ability to farm fungi.
+
+Legumes, like **Acacia**, access atmospheric $N_2$ by cultivating symbiotic relationships with nitrogen-fixing bacteria. This can be an important input of N into N-limited ecosystems. Although levels of N fixation vary amongst species and across topoedaphic and cliatic gradients, the **Acacia** tree's ability to collect large quantities of N from fixation allows them to thrive in N-depleted soils.
+
+Nitrogen isotope $\delta ^{15}N$ values measured in plant tissues can provide insight into the relative contributions of N sources (fixed N vs. soil N).
+
+Termite mounds in the African savanna are nutrient-rich for a variety of reasons. 
+
+## The 15N Natural Abundance Method
+
+First, we can define isotopic values in delta notation as such:
+$$
+\delta^{15}N = \frac{R_{sample} - R_{std}}{R_{std}} * 1000 ‰
+$$
+Where R is the ratio of isotope $^{15}N$ "heavy" to $^{14}N$ "light":
+$$
+R = (^{15}N/^{14}N)
+$$
+
+The percentage of 15N from the atmosphere out of the total N in a plant sample ($\% N_{dfa}$) is calculated as below:
+
+$$
+\%N_{dfa} = (\delta^{15}N_0 - \delta^{15}N_t) / (\delta^{15}N_0 - \delta^{15}N_a) \space * 100 \%
+$$
+where 
+$\delta^{15}N_0$ : a non-N2 fixing reference plant, in our case, **Aerva**
+$\delta^{15}N_t$ : a N2 fixing plant, in our case **Acacia**
+$\delta^{15}N_a$ : N2 fixing plants in an N-free medium
+
+
+We can think about the Nitrogen isotopic composition of the **Acacia** tree using a simple mixing model that is a function of proportion $N_2 fixation$:
+
+$$
+\delta^{15}N_{acacia} = pN_{fix}(\delta^{15}N_{atm} + \Delta^{15}_{assim - atm}) \\
++ (1 - pN_{fix})(\delta^{15}N_{soil} + \Delta^{15}N_{assim-soil})
+$$
+
+Where:
+
+- $pN_{fix}$ : the proportion of **Acacia** leaf N that is derived from fixation
+- $\Delta^{15}N_{assim}$ : isotopic spacing from the source (atmospheric N to plant-available soil N) to leaf tissue.
+- $\Delta^{15}N_{assim}$ : an approximation of the actual isotopic differences between the sources and leaf tissue.
+Values for $\delta^{15}N_{atm}$ and $\delta^{15}N_{soil}$ are the values for atmospheric $N_2$ and soil-derived plant-available N, respectively. 
+
+In essence, using mass-balance, the above equation tells us that the N isotopic composition of **Acacia** is equal to the proportion of Nitrogen resulting from fixation *plus* the Nitrogen from non-fixed sources. These source terms are weighted by the isotopic composition of the atmosphere, $\delta^{15}N$, and that of the soil $\delta^{15}N$, respectively. These isotopic compositions are themselves altered by fractionation within their respective systems. The capital delta $\Delta^{15}$ terms refer to the fractionation inherent to Nitrogen fixation ("assim-atm") and nitrification ("assim-soil").
+
+We solve for $pN_{fix}$ and simplify the above equation by assuming that $\delta^{15}N_{soil}$ + $\Delta^{15}N_{assim-soil}$ = **Aerva** $\delta^{15}N$ values. By definition, $\delta^{15}N_{atm} = 0 ‰$.
+
+$$
+pN_{fix} = \frac{\delta^{15}N_{acacia} - \delta^{15}N_{aerva}}
+                {\Delta^{15}N_{assim-atm} -\delta^{15}N_{aerva}}
+$$
+
+If we assume a value for $\Delta^{15}N_{assim-atm}$, we can use this equation to estimate pNfix values for each pair of Acacia and Aerva samples. For this model, we will assume $\Delta^{15}N_{assim-atm} = 0‰$ i.e. we assume that there is no fractionation between atmospheric nitrogen and the fixed N pool. In a second scenario, we could consider a kinetic isotope effect of biological nitrogen fixation resulting in a fractionation of -2‰, $\Delta^{15}N_{assim-atm} = -2‰$, as is commonly reported in literature.
+
+What we are left with is the following:
+
+$$
+pN_{fix} = \frac{\delta^{15}N_{acacia} - \delta^{15}N_{aerva}}
+                {- \delta^{15}N_{aerva}}
+$$
+As an exmaple, we can use two isotopic values for **Acacia** and **Aerva** and compute that the proportion of Nitrogen sourced from fixation is about 81%.
+```{r}
+d15N_acacia_example = + 0.75
+d15N_aerva_example = + 4
+pNfix_example = (d15N_acacia_example - d15N_aerva_example)/(-d15N_aerva_example)
+pNfix_example
+```
+
+If we assume that $\Delta^{15}N_{assim-atm}$ is -2‰, we observe a different value:
+```{r}
+d15N_acacia_example = + 0.75
+d15N_aerva_example = + 4
+pNfix_example = (d15N_acacia_example - d15N_aerva_example)/(-2 - d15N_aerva_example) # fractionation of -2 permil between atmosphere and fixed N
+pNfix_example
+```
+
+
+
+
+
+
+
+
 
