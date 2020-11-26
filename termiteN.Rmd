@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r, include=FALSE}
 library(tidyverse)
+library(reticulate)
 ```
 
 
@@ -30,7 +31,7 @@ Nitrogen isotope $\delta ^{15}N$ values measured in plant tissues can provide in
 
 Termite mounds in the African savanna are nutrient-rich for a variety of reasons. 
 
-## The 15N Natural Abundance Method
+# The 15N Natural Abundance Method
 
 First, we can define isotopic values in delta notation as such:
 $$
@@ -99,11 +100,63 @@ pNfix_example = (d15N_acacia_example - d15N_aerva_example)/(-2 - d15N_aerva_exam
 pNfix_example
 ```
 
+# Visualizing Landscape Change with 3D Plotting
+Let's switch to Python:
 
+```{python}
+import numpy as np
+from numpy import genfromtxt
+import matplotlib.pyplot as plt
+print("Hello world! Libraries are loaded.")
 
+```
 
+We can use `genfromtxt` to read our csv as a numpy array:
+```{python}
+uni_landscape_end = genfromtxt('TeamTermite/dfs/degrades_uniform/uniform_200_500_quantity_end.csv', delimiter=",")
+uni_landscape_start = genfromtxt('TeamTermite/dfs/degrades_uniform/uniform_200_500_quantity_start.csv', delimiter=",")
+uni_landscape_start
 
+```
+We can define a function to create a 2d heatmap that shows the location of termite mounds and the relative amount of food on such mounds. The below plot is an example of the "start" of a simulation where termite mounds are rich in food, and mounds are evenly spaced.
 
+```{python}
+def heatmap2d(arr: np.ndarray):
+    plt.imshow(arr, cmap='viridis')
+    plt.colorbar()
+    plt.show()
 
+heatmap2d(uni_landscape_start)
+```
 
+Here we define a 3D plotting tool and observe what the landscape food quantities look like before any herbivores have entered the arena:
+```{python}
+def surface3d(arr: np.ndarray):
+    ny, nx = uni_landscape_start.shape
+    xd = np.linspace(0, 1, nx)
+    yd = np.linspace(0, 1, ny)
+    xv, yv = np.meshgrid(xd, yd)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection = '3d')
+    ax.plot_surface(xv, yv, arr, cmap = 'viridis')
+    plt.show()
+    
+surface3d(uni_landscape_start)
+```
+
+Here is the landscape food quanitity after herbivores have passed through and eaten:
+```{python}
+surface3d(uni_landscape_end)
+```
+
+# Creating an Isoscape
+
+Acacia $\delta^{15}N$ isoscape can be generated. Surface values are derived from the best-fit model for Acacia $\delta^{15}N$ using averages of relative latitutde and logitude for the mapped region:
+
+$$
+log(\delta^{15}N + 1) = 1.2608 - 0.0347(d) + 0.000255(lat) - 6.0308x10^{-7}(long)^2
+$$
+where d : distance from mound center
+      lat : relative latitude
+      long : relative longitude
 
