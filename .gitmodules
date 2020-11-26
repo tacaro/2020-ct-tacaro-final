@@ -1,0 +1,3 @@
+[submodule "TeamTermite"]
+	path = TeamTermite
+	url = https://github.com/tacaro/TeamTermite
