@@ -132,7 +132,7 @@ heatmap2d(uni_landscape_start)
 Here we define a 3D plotting tool and observe what the landscape food quantities look like before any herbivores have entered the arena:
 ```{python}
 def surface3d(arr: np.ndarray):
-    ny, nx = uni_landscape_start.shape
+    ny, nx = arr.shape
     xd = np.linspace(0, 1, nx)
     yd = np.linspace(0, 1, ny)
     xv, yv = np.meshgrid(xd, yd)
@@ -141,7 +141,6 @@ def surface3d(arr: np.ndarray):
     ax.plot_surface(xv, yv, arr, cmap = 'viridis')
     plt.show()
     
-surface3d(uni_landscape_start)
 ```
 
 Here is the landscape food quanitity after herbivores have passed through and eaten:
@@ -149,14 +148,96 @@ Here is the landscape food quanitity after herbivores have passed through and ea
 surface3d(uni_landscape_end)
 ```
 
-# Creating an Isoscape
 
+Here we can see the distribution in plant matter change due to grazing behavior.
+```{python}
+combined_uni = list([np.ndarray.flatten(uni_landscape_start), np.ndarray.flatten(uni_landscape_end)])
+
+fig1, ax1 = plt.subplots()
+ax1.violinplot(combined_uni)
+ax1.set_title('Plant Population Density')
+ax1.set_ylabel('Plant Matter (#)')
+ax1.set_xticks([1,2])
+ax1.set_xticklabels(['Before Grazing', 'After Grazing'])
+plt.show()
+```
+
+
+# Creating an Isoscape
+The simplest scenario to consider is that the termite mounds all adopt the maximum $\delta^{15}N$ values reflecting measured **Acacia** leaf samples. Correspondingly, the space between the termite mounds all adopt the minimum **Acacia** leaf $\delta^{15}N$ values.
+
+$\delta^{15}N$ Acacia on Mound = + 4‰
+$\delta^{15}N$ Acacia off Mound = + 0.5‰.
+
+We can now convert our landscapes to isoscapes by assigning these values based on the food concentration at the start of the simulation.
+
+```{python}
+d15_uni_start = uni_landscape_start.copy()
+d15_uni_start[d15_uni_start == 100] = 4 # delta 15N in permil
+d15_uni_start[d15_uni_start == 20] = 0.5 # delta 15N in permil
+
+d15_uni_end = uni_landscape_start.copy()
+d15_uni_end[d15_uni_end == 100] = 4 # delta 15N in permil
+d15_uni_end[d15_uni_end == 20] = 0.5 # delta 15N in permil
+
+```
+
+View the beginning of the simulation as an isoscape:
+```{python}
+ny, nx = d15_uni_start.shape
+xd = np.linspace(0, 1, nx)
+yd = np.linspace(0, 1, ny)
+xv, yv = np.meshgrid(xd, yd)
+p_d15_uni_start = plt.figure()
+p_d15_uni_start = p_d15_uni_start.add_subplot(111, projection = '3d')
+p_d15_uni_start.plot_surface(xv, yv, d15_uni_start, cmap = 'viridis')
+p_d15_uni_start.set_zlabel("$\delta$$^{15}$ N ‰")
+p_d15_uni_start.set_title("Start of Simulation Isoscape")
+plt.show()
+```
+
+View the end of the simulation as an isoscape:
+```{python}
+ny, nx = d15_uni_start.shape
+xd = np.linspace(0, 1, nx)
+yd = np.linspace(0, 1, ny)
+xv, yv = np.meshgrid(xd, yd)
+p_d15_uni_end = plt.figure()
+p_d15_uni_end = p_d15_uni_end.add_subplot(111, projection = '3d')
+p_d15_uni_end.plot_surface(xv, yv, d15_uni_end, cmap = 'viridis')
+p_d15_uni_end.set_zlabel("$\delta$$^{15}$ N ‰")
+p_d15_uni_end.set_title("End of Simulation Isoscape")
+plt.show()
+```
+
+Wait, aren't these plots identical?
+Yes -- while the **amount** of food in and outside of the termite mounds has changed, the mean isotopic composition of these areas has not. What **has** changed is the relative abundance of these isotopes in the landscape, as animals have preferentially grazed on the "heavy" Nitrogen areas of the termite mounds. To visualize this, we will weight the isotopic composition of each gridsquare by the amount of food contained within.
+
+We can create a 3 dimensional numpy array as such:
+```{python}
+d15N_uni_start_average = np.sum(uni_landscape_start * d15_uni_start) / np.sum(uni_landscape_start)
+d15N_uni_start_average
+
+d15N_uni_end_average = np.sum(uni_landscape_end * d15_uni_end) / np.sum(uni_landscape_end)
+d15N_uni_end_average
+
+
+```
+
+In this simulation we see a decrease in the overall isotopic composition of the landscape by 0.1‰
+
+
+
+
+
+# A more complex isoscape
 Acacia $\delta^{15}N$ isoscape can be generated. Surface values are derived from the best-fit model for Acacia $\delta^{15}N$ using averages of relative latitutde and logitude for the mapped region:
 
 $$
 log(\delta^{15}N + 1) = 1.2608 - 0.0347(d) + 0.000255(lat) - 6.0308x10^{-7}(long)^2
 $$
-where d : distance from mound center
+**where** 
+      d : distance from mound center
       lat : relative latitude
       long : relative longitude
 
