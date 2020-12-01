@@ -3,6 +3,7 @@ title: "termiteN"
 author: "Tristan Caro"
 date: "11/24/2020"
 output: html_document
+code_folding: hide
 header-includes:
   -\usepackage{textcomp}
 ---
@@ -156,7 +157,7 @@ combined_uni = list([np.ndarray.flatten(uni_landscape_start), np.ndarray.flatten
 fig1, ax1 = plt.subplots()
 ax1.violinplot(combined_uni)
 ax1.set_title('Plant Population Density')
-ax1.set_ylabel('Plant Matter (#)')
+ax1.set_ylabel('Plant Matter (value per square)')
 ax1.set_xticks([1,2])
 ax1.set_xticklabels(['Before Grazing', 'After Grazing'])
 plt.show()
@@ -220,18 +221,52 @@ d15N_uni_start_average
 
 d15N_uni_end_average = np.sum(uni_landscape_end * d15_uni_end) / np.sum(uni_landscape_end)
 d15N_uni_end_average
-
-
+d15N_uni_start_average - d15N_uni_end_average
 ```
 
-In this simulation we see a decrease in the overall isotopic composition of the landscape by 0.1‰
+In this simulation we see a decrease in the overall isotopic composition of the landscape by 0.176‰
 
 
+# Comparison of landscape type
 
+In the original model simulations, agents were released into landscapes with termite mounds spaced in either a **uniformly** or **random** arrangement. How does grazing affect the isoscape?
+
+```{python}
+rand_landscape_end = genfromtxt('TeamTermite/dfs/degrades_random/random_200_500_quantity_end.csv', delimiter=",")
+rand_landscape_start = genfromtxt('TeamTermite/dfs/degrades_random/random_200_500_quantity_start.csv', delimiter=",")
+
+heatmap2d(rand_landscape_start)
+```
+```{python}
+surface3d(rand_landscape_start)
+```
+
+Convert landscape to isoscape as done above:
+```{python}
+d15_rand_start = rand_landscape_start.copy()
+d15_rand_start[d15_rand_start == 100] = 4 # delta 15N in permil
+d15_rand_start[d15_rand_start == 20] = 0.5 # delta 15N in permil
+
+d15_rand_end = rand_landscape_start.copy()
+d15_rand_end[d15_rand_end == 100] = 4 # delta 15N in permil
+d15_rand_end[d15_rand_end == 20] = 0.5 # delta 15N in permil
+```
+
+```{python}
+d15N_rand_start_average = np.sum(rand_landscape_start * d15_rand_start) / np.sum(rand_landscape_start)
+d15N_rand_start_average
+
+d15N_rand_end_average = np.sum(rand_landscape_end * d15_rand_end) / np.sum(rand_landscape_end)
+d15N_rand_end_average
+
+d15N_rand_start_average - d15N_rand_end_average
+```
+
+This grazing behavior results in a change in $\delta^{15}N$ of 0.195‰
 
 
 # A more complex isoscape
-Acacia $\delta^{15}N$ isoscape can be generated. Surface values are derived from the best-fit model for Acacia $\delta^{15}N$ using averages of relative latitutde and logitude for the mapped region:
+Acacia $\delta^{15}N$ isoscape can be generated. Surface values are derived from the best-fit model for Acacia $\delta^{15}N$ using averages of relative latitude and longitude for the mapped region:
 
 $$
 log(\delta^{15}N + 1) = 1.2608 - 0.0347(d) + 0.000255(lat) - 6.0308x10^{-7}(long)^2
