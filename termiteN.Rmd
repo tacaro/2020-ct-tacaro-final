@@ -2,10 +2,13 @@
 title: "termiteN"
 author: "Tristan Caro"
 date: "11/24/2020"
-output: html_document
-code_folding: hide
-header-includes:
-  -\usepackage{textcomp}
+output:
+  html_document:
+    code_folding: hide
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -18,6 +21,9 @@ library(reticulate)
 ```
 
 
+
+
+
 # Termites
 
 Many non-biological and biological processes create regularly patterned landscapes. However, there is not much understanding of how patterning impacts ecological behavior.
@@ -26,15 +32,36 @@ Spatial structure in biotic processes is an important factor in governing commun
 
 Termites have been identified as a keystone species in the African savannas. Termites are particularly interesting due to their ability to farm fungi.
 
-Legumes, like **Acacia**, access atmospheric $N_2$ by cultivating symbiotic relationships with nitrogen-fixing bacteria. This can be an important input of N into N-limited ecosystems. Although levels of N fixation vary amongst species and across topoedaphic and cliatic gradients, the **Acacia** tree's ability to collect large quantities of N from fixation allows them to thrive in N-depleted soils.
+Legumes, like *Acacia*, access atmospheric $N_2$ by cultivating symbiotic relationships with nitrogen-fixing bacteria. This can be an important input of N into N-limited ecosystems. Although levels of N fixation vary amongst species and across topoedaphic and cliatic gradients, the *Acacia* tree's ability to collect large quantities of N from fixation allows them to thrive in N-depleted soils. This is in contrast to *Aerva*, a non-N fixing tree also found in the African savannah.
 
 Nitrogen isotope $\delta ^{15}N$ values measured in plant tissues can provide insight into the relative contributions of N sources (fixed N vs. soil N).
 
-Termite mounds in the African savanna are nutrient-rich for a variety of reasons. 
+In short, termite mounds are **enriched** in the heavy isotope $^{15}N$ due to the action of legumous trees such as *Acacia* and their nitrogen-fixing symbionts. Nitrogen fixation pulls "heavier" nitrogen directly from the atmosphere and averts biological systems that fractionate Nitrogen preferentially towards lighter mass. Thus, there is often a telling isotopic "signature" of Nitrogen fixation.
+
+## Grazing Behavior Model - Brief Summary
+The directory `TeamTermite` is a git submodule that contains an agent-based model of herbivore grazing amid nutrient rich hotspots, representing termite mounds.
+
+The model has three phases:
+
+1. The landscape is initialized in either a `uniform`, `neutral`, or `random` patterning:
+    + A uniform landscape contains regularly spaced termite mounds.
+    + A random landscape contains termite mounds that are randomly scattered.
+    + A neutral landscape contains no termite mounds but instead stochastically distributes nutrition across the space.
+2. Agents are instantiated:
+    + An agent, representing an herbivore, is spawned into the landscape. 
+    + The agent begins a random walk whose parameters are user-defined.
+    + The agent grazes on food it encounters.
+    + The agent utilizes a `memory` method, which allows it to remember areas of higher food concentration.
+    + The agent exits the landscape.
+    + Another agent is spawned.
+3. Simulation data is exported:
+    + Landscape data, such as the amount and quality of food, is exported as a `.csv` array.
+    + Agent data, such as trajectory and residence time, is exported as a `.csv` array.
+
 
 # The 15N Natural Abundance Method
 
-First, we can define isotopic values in delta notation as such:
+First, we define isotopic values in delta notation as such:
 $$
 \delta^{15}N = \frac{R_{sample} - R_{std}}{R_{std}} * 1000 ‰
 $$
@@ -52,7 +79,6 @@ where
 $\delta^{15}N_0$ : a non-N2 fixing reference plant, in our case, **Aerva**
 $\delta^{15}N_t$ : a N2 fixing plant, in our case **Acacia**
 $\delta^{15}N_a$ : N2 fixing plants in an N-free medium
-
 
 We can think about the Nitrogen isotopic composition of the **Acacia** tree using a simple mixing model that is a function of proportion $N_2 fixation$:
 
@@ -85,7 +111,7 @@ $$
 pN_{fix} = \frac{\delta^{15}N_{acacia} - \delta^{15}N_{aerva}}
                 {- \delta^{15}N_{aerva}}
 $$
-As an exmaple, we can use two isotopic values for **Acacia** and **Aerva** and compute that the proportion of Nitrogen sourced from fixation is about 81%.
+As an exmaple, we can use two isotopic values for *Acacia* and *Aerva* and compute that the proportion of Nitrogen sourced from fixation is about 81%.
 ```{r}
 d15N_acacia_example = + 0.75
 d15N_aerva_example = + 4
@@ -102,13 +128,12 @@ pNfix_example
 ```
 
 # Visualizing Landscape Change with 3D Plotting
-Let's switch to Python:
 
 ```{python}
 import numpy as np
 from numpy import genfromtxt
 import matplotlib.pyplot as plt
-print("Hello world! Libraries are loaded.")
+print("Libraries are loaded.")
 
 ```
 
@@ -117,7 +142,6 @@ We can use `genfromtxt` to read our csv as a numpy array:
 uni_landscape_end = genfromtxt('TeamTermite/dfs/degrades_uniform/uniform_200_500_quantity_end.csv', delimiter=",")
 uni_landscape_start = genfromtxt('TeamTermite/dfs/degrades_uniform/uniform_200_500_quantity_start.csv', delimiter=",")
 uni_landscape_start
-
 ```
 We can define a function to create a 2d heatmap that shows the location of termite mounds and the relative amount of food on such mounds. The below plot is an example of the "start" of a simulation where termite mounds are rich in food, and mounds are evenly spaced.
 
@@ -144,13 +168,11 @@ def surface3d(arr: np.ndarray):
     
 ```
 
-Here is the landscape food quanitity after herbivores have passed through and eaten:
+Here is the landscape after herbivores have passed through and eaten. Note the decreased food concentrations on termite mounds. This is due to the grazing behavior of the agents in our initial model.
 ```{python}
 surface3d(uni_landscape_end)
 ```
 
-
-Here we can see the distribution in plant matter change due to grazing behavior.
 ```{python}
 combined_uni = list([np.ndarray.flatten(uni_landscape_start), np.ndarray.flatten(uni_landscape_end)])
 
@@ -163,9 +185,8 @@ ax1.set_xticklabels(['Before Grazing', 'After Grazing'])
 plt.show()
 ```
 
-
 # Creating an Isoscape
-The simplest scenario to consider is that the termite mounds all adopt the maximum $\delta^{15}N$ values reflecting measured **Acacia** leaf samples. Correspondingly, the space between the termite mounds all adopt the minimum **Acacia** leaf $\delta^{15}N$ values.
+The simplest scenario to consider is that the termite mounds all adopt the maximum $\delta^{15}N$ values reflecting measured *Acacia* leaf samples. Correspondingly, the space between the termite mounds all adopt the minimum *Acacia* leaf $\delta^{15}N$ values.
 
 $\delta^{15}N$ Acacia on Mound = + 4‰
 $\delta^{15}N$ Acacia off Mound = + 0.5‰.
@@ -264,6 +285,56 @@ d15N_rand_start_average - d15N_rand_end_average
 
 This grazing behavior results in a change in $\delta^{15}N$ of 0.195‰
 
+## Over-grazing scenario
+
+What happens when over-grazing occurs to the point that the landscape structure is nearly destroyed? Let's consider the scenario where the final food amounts are much further depleted.
+
+```{python}
+# Generate new numpy arrays to edit
+import random
+uni_landscape_end_2 = uni_landscape_end.copy()
+rand_landscape_end_2 = rand_landscape_end.copy()
+
+# Over-graze the termite mound areas: reduce their plant matter value to a random integer between 1 and 30.
+uni_landscape_end_2[uni_landscape_end_2 > 30] = random.randint(1, 30)
+rand_landscape_end_2[rand_landscape_end_2 > 30] = random.randint(1, 30)
+heatmap2d(rand_landscape_end_2)
+
+# Convert these into isoscapes using the mappings from the previous section
+# Starting condition is the same - random landscape
+d15N_rand_start_average_2 = np.sum(rand_landscape_start * d15_rand_start) / np.sum(rand_landscape_start)
+d15N_uni_start_average_2 = np.sum(uni_landscape_start * d15_uni_start) / np.sum(uni_landscape_start)
+
+# End condition is different - random landscape
+d15N_rand_end_average_2 = np.sum(rand_landscape_end_2 * d15_rand_end) / np.sum(rand_landscape_end_2)
+d15N_uni_end_average_2 = np.sum(uni_landscape_end_2 * d15_uni_end) / np.sum(uni_landscape_end_2)
+
+diff_rand_normal = d15N_rand_start_average - d15N_rand_end_average
+diff_uni_normal = d15N_uni_start_average - d15N_uni_end_average
+diff_rand_overgraze = d15N_rand_start_average_2 - d15N_rand_end_average_2
+diff_uni_overgraze = d15N_uni_start_average_2 - d15N_uni_end_average_2
+
+rand_normal = [d15N_rand_start_average, d15N_rand_end_average]
+uni_normal = [d15N_uni_start_average, d15N_uni_end_average]
+rand_overgraze = [d15N_rand_start_average_2, d15N_rand_end_average_2]
+uni_overgraze = [d15N_uni_start_average_2, d15N_uni_end_average_2]
+```
+
+```{python}
+f_iso_data_2 = plt.figure()
+a_iso_data_2 = plt.axes()
+
+a_iso_data_2.plot(rand_normal, label = 'Random, normal grazing')
+a_iso_data_2.plot(rand_overgraze, label = 'Random, over-grazing')
+a_iso_data_2.plot(uni_normal, label = 'Uniform, normal grazing')
+a_iso_data_2.plot(uni_overgraze, label = 'Uniform, over-grazing')
+a_iso_data_2.legend(title = 'Scenario')
+a_iso_data_2.set_title('Landscape Total $\delta^{15}N$')
+a_iso_data_2.set_xlabel('Fraction of simulation completed')
+a_iso_data_2.set_ylabel('$\delta^{15}N$')
+```
+
+Drastic changes to the landscape due to preferential overgrazing can result in significant shifts in the isoscape! Here, it appears that, in both scenarios, the random landscape sees a *slightly* more pronounced loss of isotopic enrichment. For both a random and uniform landscape, overgrazing behavior significantly depletes the landscape of enriched Nitrogen, Nitrogen that is mainly sourced from biological $N_2$ fixation.
 
 # A more complex isoscape
 Acacia $\delta^{15}N$ isoscape can be generated. Surface values are derived from the best-fit model for Acacia $\delta^{15}N$ using averages of relative latitude and longitude for the mapped region:
@@ -276,3 +347,4 @@ $$
       lat : relative latitude
       long : relative longitude
 
+> to be continued
