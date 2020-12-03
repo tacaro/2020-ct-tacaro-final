@@ -1,0 +1,97 @@
+---
+title: "Interactive Plotting Example"
+author: "Tristan Caro"
+date: "12/1/2020"
+output: html_document
+---
+
+Seb's class example 12/1/20 
+
+# Static Plot
+```{r, message = FALSE}
+library(tidyverse)
+dataset <- as_tibble(iris)
+n_clusters <- 3
+kms <- kmeans(select(dataset, Sepal.Length, Sepal.Width), centers = n_clusters)
+p <- dataset %>% 
+  mutate(cluster = factor(kms$cluster)) %>% 
+  ggplot() + aes(Sepal.Length, Sepal.Width, color = cluster) + 
+  geom_point() + 
+  geom_point(data = as.data.frame(kms$centers), shape = 4, size = 4, color = "black") 
+p
+```
+
+# Plotly Plot
+```{r, message = FALSE}
+library(plotly)
+p %>% ggplotly(dynamicTicks = TRUE) # interactive plots!
+# this is still interactive in .html knits!
+```
+
+
+# Plot Function
+```{r}
+plot_clusters <- function(df, x, y, n_clusters) {
+  kms <- kmeans(select(df, {{ x }}, {{ y }}), centers = n_clusters)
+  df %>% 
+    mutate(cluster = factor(kms$cluster)) %>% 
+    ggplot() + aes({{ x }}, {{ y }}, color = cluster) + 
+    geom_point() + 
+    geom_point(data = as.data.frame(kms$centers), shape = 4, size = 4, color = "black") 
+}
+plot_clusters(dataset, x = Sepal.Length, y = Sepal.Width, n_clusters = 5)
+plot_clusters(dataset, x = Sepal.Length, y = Sepal.Width, n_clusters = 5) %>%
+  ggplotly(dynamicTicks = TRUE)
+```
+
+# Plot App
+```{r}
+library(shiny)
+vars = names(dataset)
+shinyApp(
+  # GUI
+  ui = fluidPage(
+    fluidRow(
+      column(4, selectInput('xcol', 'X Variable', vars)),
+      column(4, selectInput('ycol', 'Y Variable', vars, selected = vars[2])),
+      column(4, numericInput('clusters', 'Cluster count', 3, min = 1))
+    ),
+    fluidRow(
+      plotOutput('kmeans', height = "400px")  
+    ),
+    fluidRow(
+      plotlyOutput('kmeans_interactive', height = "400px")  
+    )
+  ),
+  # server
+  server = function(input, output, session) {
+    output$kmeans = renderPlot(
+      plot_clusters(
+        dataset,
+        x = !!sym(input$xcol),
+        y = !!sym(input$ycol),
+        n_clusters = input$clusters
+      )
+    )
+    output$kmeans_interactive = renderPlotly(
+      plot_clusters(
+        dataset,
+        x = !!sym(input$xcol),
+        y = !!sym(input$ycol),
+        n_clusters = input$clusters
+      ) %>% ggplotly(dynamicTicks = TRUE)
+    )
+  },
+  options = list(height = 500)
+)
+```
+
+
+
+
+
+
+
+
+
+asdf
