@@ -1,0 +1,99 @@
+---
+title: "Advanced Landscape Visualization"
+author: "Tristan Caro"
+date: "12/2/2020"
+output:
+  html_document:
+    code_folding: hide
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+---
+
+# Rayshader
+
+rayshader is an open source package for R data visualization. rayshader uses base R matrices to create topographic mapping and data visualizations.
+
+**Load the packages** 
+```{r}
+library(tidyverse)
+#devtools::install_github("tylermorganwall/rayshader")
+# or
+# install.packages("rayshader")
+library(rayshader)
+```
+## Example: Monterey Bay
+```{r}
+library(rayshader)
+#Plotting a spherical texture map of the built-in `montereybay` dataset.
+# \donttest{
+p_montereybay <- montereybay %>%
+ sphere_shade() %>%
+ plot_3d(montereybay,zscale=50)
+render_snapshot(clear = TRUE)
+# }
+p_montereybay
+```
+
+## Example: 3D ggplots
+```{r}
+gg = ggplot(diamonds, aes(x, depth)) +
+  stat_density_2d(aes(fill = stat(nlevel)), 
+                  geom = "polygon",
+                  n = 100,bins = 10,contour = TRUE) +
+  facet_wrap(clarity~.) +
+  scale_fill_viridis_c(option = "A")
+plot_gg(gg,multicore=TRUE,width=5,height=5,scale=250)
+```
+
+
+```{r}
+mtplot = ggplot(mtcars) +
+ geom_point(aes(x=mpg,y=disp,color=cyl)) +
+ scale_color_continuous(limits=c(0,8)) +
+  theme_classic()
+
+#Preview how the plot will look by setting `preview = TRUE`: We also adjust the angle of the light.
+# \donttest{
+plot_gg(mtplot, width=3.5, sunangle=225, preview = TRUE)
+```
+
+## Model Data: Termite Landscape
+
+**Import Data**
+
+```{r, echo = FALSE, warning = FALSE}
+ls_uni_start <- read_csv('TeamTermite/dfs/degrades_uniform/uniform_200_500_quantity_start.csv', col_names = FALSE)
+ls_uni_start <- as.matrix(ls_uni_start, header = FALSE)
+
+ls_uni_end <- read_csv('TeamTermite/dfs/degrades_uniform/uniform_200_500_quantity_end.csv', col_names = FALSE)
+ls_uni_end <- as.matrix(ls_uni_end, header = FALSE)
+
+ls_rand_start <- read_csv('TeamTermite/dfs/degrades_random/random_200_500_quantity_start.csv', col_names = FALSE)
+ls_rand_start <- as.matrix(ls_rand_start, header = FALSE)
+
+ls_rand_end <- read_csv('TeamTermite/dfs/degrades_random/random_200_500_quantity_end.csv', col_names = FALSE)
+ls_rand_end <- as.matrix(ls_rand_end, header = FALSE)
+```
+
+```{r}
+p_ls_rand_end <- ls_rand_end %>%
+ sphere_shade(texture=create_texture("springgreen", "darkgreen", "turquoise", "steelblue3", "white")) %>%
+ plot_3d(ls_rand_end,zscale=50)
+render_snapshot(clear = TRUE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+> to be continued . . .
