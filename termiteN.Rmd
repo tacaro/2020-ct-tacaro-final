@@ -33,7 +33,7 @@ Legumes, like *Acacia*, access atmospheric $N_2$ by cultivating symbiotic relati
 
 Nitrogen isotope $\delta ^{15}N$ values measured in plant tissues can provide insight into the relative contributions of N sources (fixed N vs. soil N).
 
-In short, termite mounds are **enriched** in the heavy isotope $^{15}N$ due to the action of legumous trees such as *Acacia* and their nitrogen-fixing symbionts. Nitrogen fixation pulls "heavier" nitrogen directly from the atmosphere and averts biological systems that fractionate Nitrogen preferentially towards lighter mass. Thus, there is often a telling isotopic "signature" of Nitrogen fixation.
+Legumes obtain their N from the soil and through symbiotic N2 fixation. These two N sources often differ in 15N abundance whereby an N-fixing plant, which depends on both soil N and symbiotic N2 fixation, is less abundant in 15N than a non-N2-fixing plant grown at the same site (Danso etal., 1993; Evans, 2001; Handley and Scrimgeour, 1997; Shearer and Kohl, 1986). Plants dependent on soil N have positive d15N values that are close to those of soil nitrogen. In N-fixing plants, significant amounts of N are derived from the atmosphere and therefore dilute the d15N concentration derived from the soil.
 
 ## Grazing Behavior Model - Brief Summary
 The directory `TeamTermite` is a git submodule that contains an agent-based model of herbivore grazing amid nutrient rich hotspots, representing termite mounds.
